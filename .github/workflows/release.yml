@@ -22,6 +22,11 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
       
+      - name: Create icon.ico
+        run: |
+          python -m pip install pillow
+          python -c "from PIL import Image; img = Image.open('icons/icon.png'); img.save('icons/icon.ico', format='ICO', sizes=[(32,32),(64,64),(128,128),(256,256)])"
+      
       - name: Install frontend dependencies
         run: |
           cd src-ui
