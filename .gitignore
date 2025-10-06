@@ -1,0 +1,11 @@
+.env
+/target/
+Cargo.lock
+babelfish
+*.log
+tmp/
+src-ui/node_modules
+src-ui/dist
+icons/*.txt
+.direnv/
+gen/

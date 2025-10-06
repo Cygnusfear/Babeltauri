@@ -1,0 +1,5 @@
+[build]
+rustflags = []
+
+[watch]
+watch = ["src", "prompts"]
