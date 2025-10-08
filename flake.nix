@@ -27,6 +27,7 @@
             rustToolchain
             cargo-watch
             bacon
+            cargo-tauri
             pkg-config
             openssl
             gtk3
@@ -42,17 +43,62 @@
             echo "🐠 Babelfish Tauri Dev Environment"
             echo "Run: cargo run"
             echo "Watch: cargo watch -x run"
-            echo "Build: cargo build --release"
+            echo "Build: cd src-ui && npm run build && cd .. && cargo build --release"
           '';
         };
 
-        packages.default = pkgs.rustPlatform.buildRustPackage {
+        packages.default = pkgs.rustPlatform.buildRustPackage rec {
           pname = "babelfish";
-          version = "0.1.0";
+          version = "1.0.0";
           src = ./.;
+
           cargoLock.lockFile = ./Cargo.lock;
-          nativeBuildInputs = [ pkgs.pkg-config ];
-          buildInputs = [ pkgs.openssl ];
+
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            nodejs
+            cargo-tauri
+            wrapGAppsHook3
+          ];
+
+          buildInputs = with pkgs; [
+            openssl
+            glib
+            gtk3
+            webkitgtk_4_1
+            libsoup_3
+            glib-networking
+          ];
+
+          # Build frontend first
+          preBuild = ''
+            cd src-ui
+            npm ci
+            npm run build
+            cd ..
+          '';
+
+          # Use cargo-tauri to build
+          buildPhase = ''
+            runHook preBuild
+            cargo tauri build --bundles deb
+            runHook postBuild
+          '';
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out/bin
+            cp target/release/babeltauri $out/bin/babelfish
+            runHook postInstall
+          '';
+
+          meta = with pkgs.lib; {
+            description = "Blazing fast translator with Tauri UI";
+            homepage = "https://github.com/yourusername/babeltauri";
+            license = licenses.mit;
+            maintainers = [ ];
+            platforms = platforms.linux;
+          };
         };
       }
     );
