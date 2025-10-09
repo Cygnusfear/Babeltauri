@@ -12,7 +12,13 @@ use std::sync::RwLock;
 pub fn run() {
     dotenvy::dotenv().ok();
 
-    let api_key = std::env::var("OPENROUTER_API_KEY").unwrap_or_default();
+    // Try to load from saved config first, fallback to env var
+    let api_key = commands::load_api_key();
+    let api_key = if api_key.is_empty() {
+        std::env::var("OPENROUTER_API_KEY").unwrap_or_default()
+    } else {
+        api_key
+    };
     
     let pairs = prompts::load_prompts().unwrap_or_else(|_| vec![
         LanguagePair::new("es-en".to_string(), include_str!("../prompts/es-en.md").to_string()),
