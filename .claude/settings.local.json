@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "WebFetch(domain:v2.tauri.app)",
+      "WebSearch",
+      "Bash(cargo clean:*)",
+      "Bash(npm run build:*)",
+      "Bash(cargo tauri:*)",
+      "Bash(env TAURI_ENV_DEBUG=false cargo build --release)"
     ],
     "deny": [],
     "ask": []

@@ -8,15 +8,12 @@ watch:
   cargo watch -x run
 
 build:
-  nix build '.#default' --print-build-logs
+  nix develop -c cargo tauri build
 
 build-cargo:
   #!/usr/bin/env bash
-  echo "🔨 Building with Cargo (requires nix develop shell)..."
-  echo "Step 1/2: Building frontend UI..."
-  cd src-ui && npm run build
-  echo "Step 2/2: Building Tauri application in release mode..."
-  cd .. && cargo build --release
+  echo "🔨 Building with Cargo Tauri (requires nix develop shell)..."
+  cargo tauri build
   echo "✅ Build complete!"
   echo "Binary location: target/release/babeltauri"
 

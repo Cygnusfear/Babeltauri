@@ -43,7 +43,7 @@
             echo "🐠 Babelfish Tauri Dev Environment"
             echo "Run: cargo run"
             echo "Watch: cargo watch -x run"
-            echo "Build: cd src-ui && npm run build && cd .. && cargo build --release"
+            echo "Build: cargo tauri build"
           '';
         };
 
@@ -77,6 +77,7 @@
             nativeBuildInputs = with pkgs; [
               pkg-config
               wrapGAppsHook3
+              cargo-tauri
             ];
 
             buildInputs = with pkgs; [
@@ -94,10 +95,10 @@
               cp -r ${frontend}/dist/* src-ui/dist/
             '';
 
-            # Build just the Rust binary, not the full Tauri bundle
+            # Build with cargo tauri build (builds frontend + backend properly)
             buildPhase = ''
               runHook preBuild
-              cargo build --release
+              cargo tauri build
               runHook postBuild
             '';
 
