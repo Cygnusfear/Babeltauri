@@ -8,11 +8,11 @@ watch:
   cargo watch -x run
 
 build:
-  cd src-ui && npm run build && cd .. && cargo build --release
+  nix build '.#default' --print-build-logs
 
-build-bin:
+build-cargo:
   #!/usr/bin/env bash
-  echo "🔨 Building Babelfish binary..."
+  echo "🔨 Building with Cargo (requires nix develop shell)..."
   echo "Step 1/2: Building frontend UI..."
   cd src-ui && npm run build
   echo "Step 2/2: Building Tauri application in release mode..."
