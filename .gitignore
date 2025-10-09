@@ -9,3 +9,5 @@ src-ui/dist
 icons/*.txt
 .direnv/
 gen/
+result
+result-*
