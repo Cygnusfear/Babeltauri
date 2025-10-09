@@ -47,59 +47,75 @@
           '';
         };
 
-        packages.default = pkgs.rustPlatform.buildRustPackage rec {
-          pname = "babelfish";
-          version = "1.0.0";
-          src = ./.;
+        packages.default =
+          let
+            # Pre-build the frontend to avoid doing it during Rust build
+            frontend = pkgs.buildNpmPackage {
+              pname = "babelfish-frontend";
+              version = "1.0.0";
+              src = ./src-ui;
 
-          cargoLock.lockFile = ./Cargo.lock;
+              npmDepsHash = "sha256-Wx+UIRrmi5oUW1TYTBPkmbB9DTCTug6x4R+ePsY0BKw=";
 
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-            nodejs
-            cargo-tauri
-            wrapGAppsHook3
-          ];
+              buildPhase = ''
+                npm run build
+              '';
 
-          buildInputs = with pkgs; [
-            openssl
-            glib
-            gtk3
-            webkitgtk_4_1
-            libsoup_3
-            glib-networking
-          ];
+              installPhase = ''
+                mkdir -p $out
+                cp -r dist $out/
+              '';
+            };
+          in
+          pkgs.rustPlatform.buildRustPackage rec {
+            pname = "babelfish";
+            version = "1.0.0";
+            src = ./.;
 
-          # Build frontend first
-          preBuild = ''
-            cd src-ui
-            npm ci
-            npm run build
-            cd ..
-          '';
+            cargoLock.lockFile = ./Cargo.lock;
 
-          # Use cargo-tauri to build
-          buildPhase = ''
-            runHook preBuild
-            cargo tauri build --bundles deb
-            runHook postBuild
-          '';
+            nativeBuildInputs = with pkgs; [
+              pkg-config
+              wrapGAppsHook3
+            ];
 
-          installPhase = ''
-            runHook preInstall
-            mkdir -p $out/bin
-            cp target/release/babeltauri $out/bin/babelfish
-            runHook postInstall
-          '';
+            buildInputs = with pkgs; [
+              openssl
+              glib
+              gtk3
+              webkitgtk_4_1
+              libsoup_3
+              glib-networking
+            ];
 
-          meta = with pkgs.lib; {
-            description = "Blazing fast translator with Tauri UI";
-            homepage = "https://github.com/yourusername/babeltauri";
-            license = licenses.mit;
-            maintainers = [ ];
-            platforms = platforms.linux;
+            # Copy pre-built frontend before build
+            preBuild = ''
+              mkdir -p src-ui/dist
+              cp -r ${frontend}/dist/* src-ui/dist/
+            '';
+
+            # Build just the Rust binary, not the full Tauri bundle
+            buildPhase = ''
+              runHook preBuild
+              cargo build --release
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+              mkdir -p $out/bin
+              cp target/release/babeltauri $out/bin/babelfish
+              runHook postInstall
+            '';
+
+            meta = with pkgs.lib; {
+              description = "Blazing fast translator with Tauri UI";
+              homepage = "https://github.com/Cygnusfear/Babeltauri";
+              license = licenses.mit;
+              maintainers = [ ];
+              platforms = platforms.linux;
+            };
           };
-        };
       }
     );
 }
