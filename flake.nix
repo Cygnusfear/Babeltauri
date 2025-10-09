@@ -47,18 +47,20 @@
           '';
         };
 
-        packages.default = pkgs.rustPlatform.buildRustPackage rec {
+        packages.default = pkgs.stdenv.mkDerivation rec {
           pname = "babelfish";
-          version = "1.0.0";
-          src = ./.;
+          version = "1.0.1";
 
-          cargoLock.lockFile = ./Cargo.lock;
+          src = pkgs.fetchurl {
+            url = "https://github.com/Cygnusfear/Babeltauri/releases/download/v${version}/babeltauri";
+            sha256 = "1n7hixfyawny1zfc761iiixim47lj07cmhx8jiy6fy79qsmdyc0q";
+          };
+
+          dontUnpack = true;
+          dontBuild = true;
 
           nativeBuildInputs = with pkgs; [
-            pkg-config
-            nodejs
-            cargo-tauri
-            wrapGAppsHook3
+            autoPatchelfHook
           ];
 
           buildInputs = with pkgs; [
@@ -70,34 +72,20 @@
             glib-networking
           ];
 
-          # Build frontend first
-          preBuild = ''
-            cd src-ui
-            npm ci
-            npm run build
-            cd ..
-          '';
-
-          # Use cargo-tauri to build
-          buildPhase = ''
-            runHook preBuild
-            cargo tauri build --bundles deb
-            runHook postBuild
-          '';
-
           installPhase = ''
             runHook preInstall
             mkdir -p $out/bin
-            cp target/release/babeltauri $out/bin/babelfish
+            cp ${src} $out/bin/babelfish
+            chmod +x $out/bin/babelfish
             runHook postInstall
           '';
 
           meta = with pkgs.lib; {
             description = "Blazing fast translator with Tauri UI";
-            homepage = "https://github.com/yourusername/babeltauri";
+            homepage = "https://github.com/Cygnusfear/Babeltauri";
             license = licenses.mit;
             maintainers = [ ];
-            platforms = platforms.linux;
+            platforms = [ "aarch64-linux" ];
           };
         };
       }
