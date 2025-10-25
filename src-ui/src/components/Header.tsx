@@ -20,7 +20,7 @@ export default function Header({
   onSelectPair,
 }: HeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-2 pb-2">
+    <div data-tauri-drag-region className="flex items-center justify-between mb-2 pb-2">
       <div className="flex items-center gap-3">
         <span className="text-sapphire font-bold">🐠 Babelfish</span>
         <div className="flex gap-3">

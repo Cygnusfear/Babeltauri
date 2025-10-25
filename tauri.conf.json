@@ -19,7 +19,18 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://openrouter.ai"
+      "csp": "default-src 'self'; connect-src 'self' https://openrouter.ai",
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "description": "Capability for all windows",
+          "windows": ["*"],
+          "permissions": [
+            "core:window:default",
+            "core:window:allow-start-dragging"
+          ]
+        }
+      ]
     }
   },
   "bundle": {
