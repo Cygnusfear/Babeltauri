@@ -16,10 +16,16 @@
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs {
           inherit system overlays;
+          config.allowBroken = true;
         };
         rustToolchain = pkgs.rust-bin.stable.latest.default.override {
           extensions = [ "rust-src" "rust-analyzer" ];
         };
+
+        # Platform-specific dependencies
+        darwinDeps = with pkgs; lib.optionals stdenv.isDarwin [
+          libiconv
+        ];
       in
       {
         devShells.default = pkgs.mkShell {
@@ -28,22 +34,29 @@
             cargo-watch
             bacon
             cargo-tauri
+            just
             pkg-config
             openssl
+            nodejs
+            zlib
+          ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+            # Linux-specific dependencies
             gtk3
             webkitgtk_4_1
             libsoup_3
             glib
             glib-networking
-            nodejs
-            zlib
-          ];
+          ] ++ darwinDeps;
+
+          # Inherit the regular shell prompt
+          NIX_SHELL_PRESERVE_PROMPT = true;
 
           shellHook = ''
             echo "🐠 Babelfish Tauri Dev Environment"
             echo "Run: cargo run"
             echo "Watch: cargo watch -x run"
             echo "Build: cargo tauri build"
+            echo "Just: just --list"
           '';
         };
 
@@ -76,18 +89,20 @@
 
             nativeBuildInputs = with pkgs; [
               pkg-config
-              wrapGAppsHook3
               cargo-tauri
+            ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+              wrapGAppsHook3
             ];
 
             buildInputs = with pkgs; [
               openssl
+            ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               glib
               gtk3
               webkitgtk_4_1
               libsoup_3
               glib-networking
-            ];
+            ] ++ darwinDeps;
 
             # Copy pre-built frontend before build
             preBuild = ''
@@ -114,7 +129,7 @@
               homepage = "https://github.com/Cygnusfear/Babeltauri";
               license = licenses.mit;
               maintainers = [ ];
-              platforms = platforms.linux;
+              platforms = platforms.linux ++ platforms.darwin;
             };
           };
       }

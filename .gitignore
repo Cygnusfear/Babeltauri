@@ -11,3 +11,7 @@ icons/*.txt
 gen/
 result
 result-*
+.DS_Store
+*.app
+*.icns
+*.iconset
